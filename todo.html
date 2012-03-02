@@ -1,0 +1,80 @@
+<html>
+	<head>
+		<script type="text/javascript" src="js/knockout-2.0.0.js"></script>
+		<link rel="stylesheet" type="text/css" href="css/styles.css">
+	</head>
+	<body>
+		<div id="todoapp">
+			<div class="title">
+				<h1>Todo</h1>
+			</div>
+
+			<form data-bind="submit: addTask" id="create-todo">
+			    <input class="new-todo" data-bind="value: newTaskText" placeholder="What needs to be done?" />
+			</form>
+
+			<div class="todos">
+				<ul data-bind="foreach: tasks, visible: tasks().length > 0" id="todo-list">
+				    <li>
+						<div class="todo" data-bind="css: { editing: isEditing }, event: { dblclick: startEdit }">
+							<div class="display" data-bind="css: { done: isDone }">
+						        <input type="checkbox" class="check" data-bind="checked: isDone" />
+								<div class="todo-text" data-bind="text: title"></div>
+						        <a href="#" class="todo-destroy" data-bind="click: $parent.removeTask">&times;</a>
+							</div>
+							<div class="edit">
+								<form data-bind="submit: updateTask">
+									<input data-bind="value: title" />
+								</form>
+							</div>
+						</div>
+				    </li> 
+				</ul>
+			</div>
+
+			You have <b data-bind="text: incompleteTasks().length">&nbsp;</b> incomplete task(s)
+			<span data-bind="visible: incompleteTasks().length == 0"> - it's beer time!</span>
+		</div>
+		
+		<div id="credits">
+			<p>Dbl-click to edit tasks.</p>
+		</div>
+		
+		
+		<script>
+			function Task(data) {
+			    this.title = ko.observable(data.title);
+			    this.isDone = ko.observable(data.isDone);
+				this.isEditing = ko.observable(data.isEditing);
+				
+				this.startEdit = function (event) {
+					console.log("editing");
+					this.isEditing(true);
+				}
+				
+				this.updateTask = function (task) {
+					this.isEditing(false);
+				}
+			}
+
+			function TaskListViewModel() {
+			    // Data
+			    var self = this;
+			    self.tasks = ko.observableArray([]);
+			    self.newTaskText = ko.observable();
+			    self.incompleteTasks = ko.computed(function() {
+			        return ko.utils.arrayFilter(self.tasks(), function(task) { return !task.isDone() });
+			    });
+
+			    // Operations
+			    self.addTask = function() {
+			        self.tasks.push(new Task({ title: this.newTaskText(), isEditing: false }));
+			        self.newTaskText("");
+			    };
+			    self.removeTask = function(task) { self.tasks.remove(task) };
+			}
+
+			ko.applyBindings(new TaskListViewModel());		
+		</script>		
+	</body>
+</html>
