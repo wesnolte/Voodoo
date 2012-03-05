@@ -225,3 +225,7 @@ html {
   }
 
 /* Additional Styles */
+
+#clear-completed{
+	float: right;
+}

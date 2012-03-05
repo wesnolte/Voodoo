@@ -2,7 +2,7 @@
 	<head>
 		<link rel="stylesheet" type="text/css" href="css/styles.css">		
 		
-		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+		<script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
 		<script type="text/javascript" src="js/knockout-2.0.0.js"></script>		
 	</head>
 	<body>
@@ -36,6 +36,7 @@
 
 			You have <b data-bind="text: incompleteTasks().length">&nbsp;</b> incomplete task(s)
 			<span data-bind="visible: incompleteTasks().length == 0"> - its beer time!</span>
+			<a data-bind="visible: completeTasks().length > 0, click: removeCompleted " href="#" id="clear-completed">Clear Completed Tasks</a>
 		</div>
 		
 		<div id="credits">
@@ -47,7 +48,8 @@
 			/* data goes here */
 			var data = [
 					{id: 1, title: "Drink beer", isDone: false},
-					{id: 1, title: "Eat food", isDone: false}
+					{id: 2, title: "Eat food", isDone: false},
+					{id: 3, title: "Snowboard", isDone: false}					
 				];
 						
 			function Task(data) {
@@ -71,15 +73,29 @@
 			    self.tasks = ko.observableArray([]);
 			    self.newTaskText = ko.observable();
 			    self.incompleteTasks = ko.computed(function() {
-			        return ko.utils.arrayFilter(self.tasks(), function(task) { return !task.isDone() });
+			        return ko.utils.arrayFilter(self.tasks(), 
+						function(task) { 
+							return !task.isDone() && !task._destroy;
+						});
 			    });
-
+			
+				self.completeTasks = ko.computed(function(){
+					return ko.utils.arrayFilter(self.tasks(), 
+						function(task) { 
+							return task.isDone() && !task._destroy;
+						});
+				});
+			
 			    // Operations
 			    self.addTask = function() {
 			        self.tasks.push(new Task({ title: this.newTaskText(), isEditing: false }));
 			        self.newTaskText("");
 			    };
-			    self.removeTask = function(task) { self.tasks.remove(task) };
+			    self.removeTask = function(task) { self.tasks.destroy(task) };
+			
+				self.removeCompleted = function(){
+					self.tasks.destroyAll(self.completeTasks());
+				};
 			
 				/* Load the data */
 				var mappedTasks = $.map(data, function(item){
